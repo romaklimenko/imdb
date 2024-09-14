@@ -1,3 +1,9 @@
+# IMDb
+
+## Data Model
+
+https://developer.imdb.com/non-commercial-datasets/
+
 ```mermaid
 erDiagram
     TITLE["title.basics.tsv.gz"] {
@@ -61,4 +67,89 @@ erDiagram
     TITLE ||--o| TITLE_RATINGS : "has"
     TITLE }o--o{ NAME : "involves"
     NAME ||--o{ TITLE_PRINCIPALS : "participates in"
+```
+
+## Star Schema
+
+```mermaid
+erDiagram
+    TITLE_FACT {
+        string tconst PK "Unique identifier"
+        string titleType FK "Reference to Title Type dimension"
+        boolean isAdult "0: non-adult, 1: adult"
+        int startYear "Release year"
+        int endYear "End year for TV Series"
+        int runtimeMinutes "Runtime in minutes"
+        float averageRating "Average rating"
+        int numVotes "Number of votes"
+    }
+    TITLE_TYPE_DIM {
+        string titleType PK "Type of title"
+        string description "Description of title type"
+    }
+    TITLE_TEXT_DIM {
+        string tconst PK "Unique identifier"
+        string primaryTitle "Popular title"
+        string originalTitle "Original title"
+    }
+    GENRE_DIM {
+        string genreId PK "Unique identifier for genre"
+        string genreName "Name of genre"
+    }
+    TITLE_GENRE_BRIDGE {
+        string tconst FK "Reference to Title"
+        string genreId FK "Reference to Genre"
+    }
+    PERSON_DIM {
+        string nconst PK "Unique identifier for person"
+        string primaryName "Name of person"
+        int birthYear "Birth year"
+        int deathYear "Death year"
+    }
+    PROFESSION_DIM {
+        string professionId PK "Unique identifier for profession"
+        string professionName "Name of profession"
+    }
+    PERSON_PROFESSION_BRIDGE {
+        string nconst FK "Reference to Person"
+        string professionId FK "Reference to Profession"
+    }
+    TITLE_CREW_BRIDGE {
+        string tconst FK "Reference to Title"
+        string nconst FK "Reference to Person"
+        string role "Director or Writer"
+    }
+    TITLE_PRINCIPAL_BRIDGE {
+        string tconst FK "Reference to Title"
+        string nconst FK "Reference to Person"
+        string category "Job category"
+        string job "Specific job title"
+        string characters "Character name(s)"
+    }
+    EPISODE_DIM {
+        string tconst PK "Unique identifier for episode"
+        string parentTconst FK "Reference to parent TV Series"
+        int seasonNumber "Season number"
+        int episodeNumber "Episode number"
+    }
+    AKA_DIM {
+        string akaId PK "Unique identifier for AKA"
+        string tconst FK "Reference to Title"
+        string title "Alternative title"
+        string region "Region for this version"
+        string language "Language of the title"
+    }
+
+    TITLE_FACT ||--o{ TITLE_GENRE_BRIDGE : "has"
+    TITLE_FACT ||--o{ TITLE_CREW_BRIDGE : "has"
+    TITLE_FACT ||--o{ TITLE_PRINCIPAL_BRIDGE : "has"
+    TITLE_FACT ||--|| TITLE_TEXT_DIM : "has"
+    TITLE_FACT ||--|| TITLE_TYPE_DIM : "has"
+    TITLE_FACT ||--o{ AKA_DIM : "has"
+    TITLE_FACT ||--o| EPISODE_DIM : "may be"
+    GENRE_DIM ||--o{ TITLE_GENRE_BRIDGE : "belongs to"
+    PERSON_DIM ||--o{ PERSON_PROFESSION_BRIDGE : "has"
+    PERSON_DIM ||--o{ TITLE_CREW_BRIDGE : "participates in"
+    PERSON_DIM ||--o{ TITLE_PRINCIPAL_BRIDGE : "participates in"
+    PROFESSION_DIM ||--o{ PERSON_PROFESSION_BRIDGE : "belongs to"
 ```
